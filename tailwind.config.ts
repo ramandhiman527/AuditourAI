@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,11 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				'deep-slate': '#5A639C',
+				'muted-violet': '#7776B3',
+				'soft-lavender': '#9B86BD',
+				'pale-orchid': '#E2BBE9'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +89,35 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'pulse-glow': {
+					'0%, 100%': { opacity: '0.7', transform: 'scale(1)' },
+					'50%': { opacity: '1', transform: 'scale(1.05)' }
+				},
+				'neural-pulse': {
+					'0%, 100%': { opacity: '0.3' },
+					'50%': { opacity: '0.8' }
+				},
+				'slide-up': {
+					'0%': { transform: 'translateY(100px)', opacity: '0' },
+					'100%': { transform: 'translateY(0)', opacity: '1' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'float': 'float 3s ease-in-out infinite',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+				'neural-pulse': 'neural-pulse 1.5s ease-in-out infinite',
+				'slide-up': 'slide-up 0.6s ease-out'
+			},
+			backgroundImage: {
+				'neural-gradient': 'linear-gradient(135deg, #5A639C 0%, #7776B3 25%, #9B86BD 75%, #E2BBE9 100%)',
+				'agent-glow': 'radial-gradient(circle at center, rgba(155, 134, 189, 0.3) 0%, transparent 70%)'
 			}
 		}
 	},
