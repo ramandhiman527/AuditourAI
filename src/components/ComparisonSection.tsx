@@ -1,234 +1,379 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useEffect, useRef } from 'react';
+import { motion, useInView, useAnimation } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { FileText, Clock, Zap, BarChart3, CheckCircle, AlertCircle, ArrowUpRight, Clock3, Gauge, ZapOff } from 'lucide-react';
 
-const ComparisonSection = () => {
-  const [animatedValues, setAnimatedValues] = useState({
-    humanDocs: 0,
-    aiDocs: 0,
-    humanAccuracy: 0,
-    aiAccuracy: 0,
-    humanTime: 0,
-    aiTime: 0,
-    humanReportTime: 0,
-    aiReportTime: 0
-  });
-
-  const targetValues = {
-    humanDocs: 20,
-    aiDocs: 200,
-    humanAccuracy: 94,
-    aiAccuracy: 99.2,
-    humanTime: 8,
-    aiTime: 0.75,
-    humanReportTime: 4,
-    aiReportTime: 0.25
-  };
+const AnimatedNumber = ({ value, duration = 1, prefix = '', suffix = '', decimals = 0 }) => {
+  const controls = useAnimation();
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.5 });
 
   useEffect(() => {
-    const animateValues = () => {
-      Object.keys(targetValues).forEach(key => {
-        const target = targetValues[key];
-        const increment = target / 100;
-        
-        const timer = setInterval(() => {
-          setAnimatedValues(prev => {
-            if (prev[key] >= target) {
-              clearInterval(timer);
-              return prev;
-            }
-            return {
-              ...prev,
-              [key]: Math.min(prev[key] + increment, target)
-            };
-          });
-        }, 20);
+    if (isInView) {
+      controls.start({
+        opacity: 1,
+        transition: { duration: 0.5 }
       });
-    };
+    }
+  }, [isInView, controls]);
 
-    const timer = setTimeout(animateValues, 500);
-    return () => clearTimeout(timer);
-  }, []);
+  return (
+    <motion.span
+      ref={ref}
+      initial={{ opacity: 0 }}
+      animate={controls}
+      className="inline-block"
+    >
+      {prefix}
+      <motion.span
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: 1,
+          transition: { duration: 0.5, delay: 0.3 }
+        }}
+        onAnimationStart={() => {
+          const start = 0;
+          const end = value;
+          const durationMs = duration * 1000;
+          const startTime = performance.now();
+          
+          const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / durationMs, 1);
+            const currentValue = Math.floor(progress * (end - start) + start);
+            
+            if (ref.current) {
+              ref.current.textContent = currentValue.toLocaleString();
+            }
+            
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else if (ref.current) {
+              ref.current.textContent = end.toLocaleString();
+            }
+          };
+          
+          requestAnimationFrame(animate);
+        }}
+      >
+        <span ref={ref}></span>
+      </motion.span>
+      {suffix}
+    </motion.span>
+  );
+};
 
-  const comparisons = [
+const ComparisonCard = ({ title, human, ai, icon: Icon, unit, improvement, description, index }) => {
+  const controls = useAnimation();
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px 0px" });
+
+  useEffect(() => {
+    if (isInView) {
+      controls.start({
+        y: 0,
+        opacity: 1,
+        transition: { duration: 0.5, delay: index * 0.1 }
+      });
+    }
+  }, [isInView, controls, index]);
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ y: 50, opacity: 0 }}
+      animate={controls}
+      className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-300"
+    >
+      <div className="p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+            <Icon className="w-6 h-6" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+        </div>
+        <p className="text-gray-600 mb-6">{description}</p>
+        
+        <div className="space-y-6">
+          {/* Human Performance */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-500">Human Auditor</span>
+              <span className="text-lg font-bold text-gray-700">
+                {typeof human === 'number' ? (
+                  <AnimatedNumber value={human} duration={1.5} suffix={` ${unit}`} />
+                ) : (
+                  <span className="text-gray-800">{human} {unit}</span>
+                )}
+              </span>
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-gray-300 to-gray-400 rounded-full"
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+
+          {/* AI Performance */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-blue-600">AuditourAI</span>
+              <span className="text-lg font-bold text-blue-600">
+                {typeof ai === 'number' ? (
+                  <AnimatedNumber value={ai} duration={1.5} suffix={` ${unit}`} />
+                ) : (
+                  <span className="text-blue-700">{ai}</span>
+                )}
+              </span>
+            </div>
+            <div className="h-2 bg-blue-50 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ 
+                  width: '100%',
+                  transition: { 
+                    duration: 1.5,
+                    delay: 0.5,
+                    ease: [0.16, 1, 0.3, 1]
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-medium">
+            <Zap className="w-4 h-4" />
+            <span>{improvement} improvement</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const ComparisonSection = () => {
+  const metrics = [
     {
-      metric: 'Document Processing',
+      title: 'Document Processing',
+      description: 'Process and analyze audit documents with AI precision',
+      icon: FileText,
+      human: 20,
+      ai: 200,
       unit: 'docs/hour',
-      human: animatedValues.humanDocs,
-      ai: animatedValues.aiDocs,
-      icon: '📄',
       improvement: '10x faster'
     },
     {
-      metric: 'Accuracy Rate',
+      title: 'Accuracy Rate',
+      description: 'Minimize human error with consistent AI accuracy',
+      icon: CheckCircle,
+      human: 94,
+      ai: 99.2,
       unit: '%',
-      human: animatedValues.humanAccuracy,
-      ai: animatedValues.aiAccuracy,
-      icon: '🎯',
-      improvement: '5.5% better'
+      improvement: '5.5% better',
+      decimals: 1
     },
     {
-      metric: 'Workflow Completion',
+      title: 'Workflow Speed',
+      description: 'Complete audit workflows in record time',
+      icon: Zap,
+      human: 8,
+      ai: 0.75,
       unit: 'hours',
-      human: animatedValues.humanTime,
-      ai: animatedValues.aiTime,
-      icon: '⚡',
       improvement: '11x faster'
     },
     {
-      metric: 'Report Generation',
+      title: 'Report Generation',
+      description: 'Generate comprehensive audit reports instantly',
+      icon: BarChart3,
+      human: 4,
+      ai: 0.25,
       unit: 'hours',
-      human: animatedValues.humanReportTime,
-      ai: animatedValues.aiReportTime,
-      icon: '📊',
       improvement: '16x faster'
     }
   ];
 
-  const additionalMetrics = [
-    { metric: 'Consistency', human: 'Variable', ai: '100% Standardized', color: 'bg-green-500' },
-    { metric: 'Availability', human: '8 hours/day', ai: '24/7 Operation', color: 'bg-blue-500' },
-    { metric: 'Scaling', human: 'Linear with hiring', ai: 'Instant scale-up', color: 'bg-purple-500' },
-    { metric: 'Learning', human: 'Experience-based', ai: 'Continuous ML improvement', color: 'bg-orange-500' }
+  const additionalBenefits = [
+    {
+      title: '24/7 Availability',
+      description: 'Audit around the clock without breaks or downtime',
+      icon: Clock,
+      highlight: true
+    },
+    {
+      title: 'Consistent Quality',
+      description: 'Eliminate human variability in audit quality',
+      icon: Gauge,
+      highlight: true
+    },
+    {
+      title: 'Zero Human Error',
+      description: 'Remove the risk of oversight and miscalculation',
+      icon: AlertCircle,
+      highlight: true
+    },
+    {
+      title: 'No Training Time',
+      description: 'Get started immediately with no learning curve',
+      icon: ZapOff,
+      highlight: true
+    }
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <Badge className="mb-4 bg-deep-slate text-white px-6 py-2 text-lg">
-            Human vs. AI Performance
+    <section className="relative py-24 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -right-40 -top-40 w-96 h-96 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full opacity-70 blur-3xl"></div>
+        <div className="absolute left-0 bottom-0 w-80 h-80 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-full opacity-70 blur-3xl"></div>
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-4xl mx-auto mb-20">
+          <Badge className="mb-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2 text-sm font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+            The Future of Auditing
           </Badge>
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
-            AI Agent Comparison
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            Human-Led vs. AI-Powered Auditing
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            See how our AI agents outperform traditional manual processes across key audit metrics
+          <p className="text-xl text-gray-600">
+            See how AuditourAI transforms traditional auditing with intelligent automation, 
+            delivering unprecedented speed, accuracy, and efficiency.
           </p>
         </div>
 
-        {/* Main Comparison Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-          {comparisons.map((comparison, index) => (
-            <Card key={index} className="overflow-hidden border-0 shadow-lg hover-lift">
-              <CardHeader className="bg-gradient-to-br from-deep-slate to-muted-violet text-white p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-2xl">{comparison.icon}</span>
-                  <CardTitle className="text-lg font-bold">{comparison.metric}</CardTitle>
+        {/* Main Comparison Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 mb-16">
+          <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-red-50 rounded-xl text-red-600">
+                <Clock3 className="w-6 h-6" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">Traditional Auditing</h3>
+            </div>
+            <ul className="space-y-5">
+              {[
+                'Manual data entry and verification',
+                'Prone to human error and inconsistency',
+                'Limited by working hours and capacity',
+                'High operational costs',
+                'Lengthy audit cycles',
+                'Difficulty scaling with business growth'
+              ].map((item, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-1">
+                    <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
+                      <svg className="w-3 h-3 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                  </div>
+                  <span className="text-gray-600">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-8 text-white relative overflow-hidden">
+            <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full"></div>
+            <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <Zap className="w-6 h-6 text-white" />
                 </div>
-                <Badge className="bg-white/20 text-white border-white/30 w-fit">
-                  {comparison.improvement}
-                </Badge>
-              </CardHeader>
+                <h3 className="text-2xl font-bold text-white">AuditourAI Solution</h3>
+              </div>
+              <ul className="space-y-5">
+                {[
+                  'Automated data extraction and analysis',
+                  'Consistent, error-free processing',
+                  '24/7 operation with instant scaling',
+                  'Reduced operational costs',
+                  'Dramatically faster audit cycles',
+                  'Easily scales with your business'
+                ].map((item, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <div className="flex-shrink-0 mt-1">
+                      <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
               
-              <CardContent className="p-6">
-                {/* Human Performance */}
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-semibold text-gray-600">Human Auditor</span>
-                    <span className="text-lg font-bold text-gray-800">
-                      {Math.round(comparison.human * 10) / 10} {comparison.unit}
-                    </span>
-                  </div>
-                  <Progress 
-                    value={comparison.metric === 'Accuracy Rate' ? comparison.human : (comparison.human / Math.max(comparison.human, comparison.ai)) * 100} 
-                    className="h-2 bg-gray-200"
-                  />
+              <div className="mt-8 pt-6 border-t border-white/10">
+                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-5 py-3 rounded-xl text-sm font-medium hover:bg-white/20 transition-all duration-300 group">
+                  <span>See how it works</span>
+                  <ArrowUpRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
                 </div>
-
-                {/* AI Performance */}
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-semibold text-deep-slate">AI Agent</span>
-                    <span className="text-lg font-bold text-deep-slate">
-                      {Math.round(comparison.ai * 10) / 10} {comparison.unit}
-                    </span>
-                  </div>
-                  <Progress 
-                    value={comparison.metric === 'Accuracy Rate' ? comparison.ai : 100} 
-                    className="h-2"
-                  />
-                </div>
-
-                {/* Performance Indicator */}
-                <div className="mt-4 text-center">
-                  <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-                    <span>↗</span>
-                    {comparison.improvement}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Additional Metrics */}
-        <div className="max-w-5xl mx-auto">
-          <h3 className="text-3xl font-bold text-center mb-12">Additional Performance Advantages</h3>
-          <div className="grid md:grid-cols-2 gap-6">
-            {additionalMetrics.map((metric, index) => (
-              <Card key={index} className="border-0 shadow-lg hover-lift">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className={`w-4 h-4 ${metric.color} rounded-full flex-shrink-0`} />
-                    <h4 className="text-lg font-bold text-gray-900">{metric.metric}</h4>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="text-sm text-gray-600 mb-1">Human</div>
-                      <div className="font-semibold text-gray-800">{metric.human}</div>
-                    </div>
-                    <div className="text-center p-4 bg-gradient-to-br from-deep-slate to-muted-violet text-white rounded-lg">
-                      <div className="text-sm text-white/80 mb-1">AI Agent</div>
-                      <div className="font-semibold">{metric.ai}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* ROI Calculator Preview */}
-        <div className="mt-16 text-center">
-          <Card className="max-w-4xl mx-auto border-0 shadow-2xl bg-gradient-to-br from-pale-orchid to-white">
-            <CardHeader className="p-8">
-              <CardTitle className="text-3xl font-bold text-deep-slate mb-4">
-                Potential Cost Savings Calculator
-              </CardTitle>
-              <p className="text-xl text-gray-700">
-                See how much your firm could save with AI automation
-              </p>
-            </CardHeader>
-            <CardContent className="p-8">
-              <div className="grid md:grid-cols-3 gap-8 text-center">
-                <div>
-                  <div className="text-4xl font-bold text-green-600 mb-2">60%</div>
-                  <div className="text-gray-700">Cost Reduction</div>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold text-blue-600 mb-2">300%</div>
-                  <div className="text-gray-700">Productivity Increase</div>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold text-purple-600 mb-2">90%</div>
-                  <div className="text-gray-700">Time Savings</div>
-                </div>
+        {/* Performance Metrics Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+          {metrics.map((metric, index) => (
+            <ComparisonCard key={index} index={index} {...metric} />
+          ))}
+        </div>
+
+        {/* Additional Benefits as Icons */}
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          {additionalBenefits.map((benefit, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ 
+                opacity: 1, 
+                y: 0,
+                transition: { 
+                  duration: 0.5,
+                  delay: index * 0.1
+                } 
+              }}
+              viewport={{ once: true }}
+              className="p-4 text-center"
+            >
+              <div className="bg-blue-50 w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-blue-600 mb-3">
+                <benefit.icon className="w-6 h-6" />
               </div>
-              
-              <div className="mt-8">
-                <p className="text-gray-600 mb-4">
-                  Based on average audit firm processing 1,000 documents monthly
-                </p>
-                <div className="text-2xl font-bold text-deep-slate">
-                  Estimated Annual Savings: ₹25,00,000+
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              <h4 className="font-semibold text-gray-900 mb-1">{benefit.title}</h4>
+              <p className="text-sm text-gray-600">{benefit.description}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* CTA Section */}
+        <div className="mt-20 text-center bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-12 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400 rounded-full -mr-32 -mt-32"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-400 rounded-full -ml-32 -mb-32"></div>
+          </div>
+          <div className="relative z-10">
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">Ready to Transform Your Audit Process?</h3>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Join forward-thinking firms already experiencing the AuditourAI advantage.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 transform hover:-translate-y-1">
+                Book a Demo
+              </button>
+              <button className="px-8 py-4 bg-white text-gray-800 font-semibold rounded-xl border border-gray-200 hover:bg-gray-50 transition-all duration-300">
+                See Pricing
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>

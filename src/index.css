@@ -313,3 +313,60 @@ html {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+
+/* New animations for Hero Section optimization */
+@keyframes slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out forwards;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 30px rgba(34, 197, 94, 0.8);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Improved responsive design */
+@media (max-width: 1024px) {
+  .lg\:text-7xl {
+    font-size: 3.5rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  .lg\:text-2xl {
+    font-size: 1.25rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .text-5xl {
+    font-size: 2.5rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  .min-w-\[320px\] {
+    min-width: 100% !important;
+  }
+  
+  .grid.lg\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+}

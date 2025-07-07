@@ -4,10 +4,112 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
+// Ring Progress Indicator
+const RingProgress = ({ percent, color }: { percent: number; color: string }) => {
+  const radius = 48;
+  const stroke = 10;
+  const normalizedRadius = radius - stroke / 2;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  const offset = circumference - (percent / 100) * circumference;
+  return (
+    <svg width={radius * 2} height={radius * 2} className="block">
+      <circle
+        stroke="#e0e7ef"
+        fill="none"
+        strokeWidth={stroke}
+        cx={radius}
+        cy={radius}
+        r={normalizedRadius}
+      />
+      <circle
+        stroke={color}
+        fill="none"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        cx={radius}
+        cy={radius}
+        r={normalizedRadius}
+        className="transition-all duration-700"
+      />
+      <text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dy=".3em"
+        className="font-black text-2xl fill-teal-600"
+        style={{ fontFamily: 'Inter, sans-serif' }}
+      >
+        {percent}%
+      </text>
+    </svg>
+  );
+};
+
+// Animated Checklist
+const AnimatedChecklist = ({ steps, progress }: { steps: string[]; progress: number }) => {
+  const completed = Math.floor((progress / 100) * steps.length);
+  return (
+    <ul className="space-y-3 mt-2">
+      {steps.map((step, i) => (
+        <li key={i} className={`flex items-center text-lg font-medium rounded-xl px-4 py-2 transition-all duration-300 ${i < completed ? 'bg-teal-100 text-teal-700' : 'bg-white/70 text-slate-500'}`}
+            style={{ fontFamily: 'Inter, sans-serif' }}>
+          <span className={`mr-3 text-2xl transition-all ${i < completed ? 'text-teal-500' : 'text-slate-300'}`}>{i < completed ? '✔' : '○'}</span>
+          {step}
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+// Simple Sparkline
+const Sparkline = ({ data, color }: { data: number[]; color: string }) => {
+  const max = Math.max(...data, 1);
+  const points = data
+    .map((d, i) => `${(i / (data.length - 1)) * 60},${20 - (d / max) * 18}`)
+    .join(' ');
+  return (
+    <svg width="60" height="20">
+      <polyline
+        fill="none"
+        stroke={color}
+        strokeWidth="3"
+        points={points}
+      />
+    </svg>
+  );
+};
+
+// Live Ticker
+const AgentTicker = ({ activity }: { activity: { agent: string; color: string; msg: string }[] }) => (
+  <div className="flex gap-6 py-3 px-4 rounded-xl bg-white/70 mt-8 shadow-inner overflow-x-auto animate-pulse">
+    {activity.map((a, i) => (
+      <span
+        key={i}
+        className={`font-bold text-lg px-3 py-1 rounded-lg`}
+        style={{ color: a.color, fontFamily: 'Inter, sans-serif', background: a.color + '22' }}
+      >
+        {a.agent}: <span className="font-medium text-slate-800">{a.msg}</span>
+      </span>
+    ))}
+  </div>
+);
+
 const WorkflowTheater = () => {
   const [currentStage, setCurrentStage] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [docsProcessed, setDocsProcessed] = useState(0);
+  const [docsProcessed, setDocsProcessed] = useState(557);
+  const [agentsOnline, setAgentsOnline] = useState(3);
+  const [docsTrend, setDocsTrend] = useState<number[]>([530,535,540,545,550,553,557]);
+  const [agentsTrend, setAgentsTrend] = useState<number[]>([2,3,3,2,3,3,3]);
+  const [ticker, setTicker] = useState([
+    { agent: 'DocMaster', color: '#0ea5e9', msg: 'Processed PDF Invoice' },
+    { agent: 'FlowGenius', color: '#14b8a6', msg: 'Decision: Route to StructureBot' },
+    { agent: 'StructureBot', color: '#6366f1', msg: 'LLM Analysis Complete' },
+    { agent: 'ReportCraft', color: '#f59e42', msg: 'Report Exported' },
+  ]);
+
 
   const stages = [
     {
@@ -44,45 +146,77 @@ const WorkflowTheater = () => {
       setProgress(prev => {
         if (prev >= 100) {
           setCurrentStage(prevStage => (prevStage + 1) % stages.length);
-          setDocsProcessed(prevDocs => prevDocs + Math.floor(Math.random() * 5) + 3);
+          setDocsProcessed(prevDocs => {
+            const next = prevDocs + Math.floor(Math.random() * 5) + 3;
+            setDocsTrend(t => [...t.slice(-6), next]);
+            return next;
+          });
+          setAgentsOnline(prev => {
+            const next = Math.max(2, Math.min(3, prev + (Math.random() > 0.7 ? (Math.random() > 0.5 ? 1 : -1) : 0)));
+            setAgentsTrend(t => [...t.slice(-6), next]);
+            return next;
+          });
+          setTicker(t => [
+            ...t.slice(1),
+            {
+              agent: ['DocMaster', 'FlowGenius', 'StructureBot', 'ReportCraft'][Math.floor(Math.random() * 4)],
+              color: ['#0ea5e9', '#14b8a6', '#6366f1', '#f59e42'][Math.floor(Math.random() * 4)],
+              msg: [
+                'Processed PDF Invoice',
+                'Decision: Route to StructureBot',
+                'LLM Analysis Complete',
+                'Report Exported',
+                'Field Extraction',
+                'OCR Complete',
+                'Template Selected',
+              ][Math.floor(Math.random() * 7)]
+            }
+          ]);
           return 0;
         }
         return prev + 2;
       });
     }, 100);
-
     return () => clearInterval(timer);
-  }, []);
+  }, [stages.length]);
 
   const currentStageData = stages[currentStage];
 
+  // Checklist steps for each stage
+  const checklist = [
+    ['PDF Invoices', 'Excel Sheets', 'Scanned Images', 'Bank Statements'],
+    ['OCR Processing', 'Field Extraction', 'Data Validation', 'LLM Analysis'],
+    ['Template Selection', 'AI Writing', 'Canvas Editing', 'Final Export'],
+  ];
+
   return (
-    <section className="py-20 bg-gradient-to-br from-deep-slate to-muted-violet">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <Badge className="mb-4 bg-white/20 text-white border-white/30 px-6 py-2 text-lg">
-            Watch AI Work
+    <section className="py-20 bg-gradient-to-br from-indigo-200 via-indigo-100 to-white font-sans" style={{ fontFamily: 'Inter, sans-serif' }}>
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="text-center mb-14">
+          <Badge className="mb-4 bg-indigo-50 text-indigo-700 border-indigo-200 px-6 py-2 text-lg shadow-lg">
+            AI Audit Command Center
           </Badge>
-          <h2 className="text-5xl font-bold text-white mb-6">
-            Agentic Workflow Theater
+          <h2 className="text-5xl font-black text-indigo-900 mb-4 tracking-tight" style={{ letterSpacing: '-.03em' }}>
+            AI Audit Command Center
           </h2>
-          <p className="text-xl text-white/90 max-w-3xl mx-auto">
-            Experience real-time AI automation as our agents collaborate to process audit workflows
+          <p className="text-xl text-indigo-600/90 max-w-2xl mx-auto">
+            Monitor and orchestrate every step of your AI-powered audit workflow in real time.
           </p>
         </div>
 
-        {/* Stage Selector */}
-        <div className="flex justify-center mb-12">
-          <div className="flex space-x-4 bg-white/10 backdrop-blur-lg rounded-lg p-2">
+        {/* Tab Selector */}
+        <div className="flex justify-center mb-10">
+          <div className="flex space-x-4 bg-white rounded-2xl p-2 shadow-xl border-4 border-indigo-100">
             {stages.map((stage, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentStage(index)}
-                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
-                  currentStage === index 
-                    ? 'bg-white text-deep-slate' 
-                    : 'text-white hover:bg-white/20'
+                className={`px-7 py-3 rounded-xl font-bold text-lg transition-all duration-300 outline-none relative ${
+                  currentStage === index
+                    ? 'bg-gradient-to-r from-teal-400 to-blue-500 text-white shadow-[0_0_16px_2px_rgba(56,189,248,0.3)] border-4 border-white ring-2 ring-teal-400'
+                    : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-4 border-transparent'
                 }`}
+                style={currentStage === index ? { boxShadow: '0 0 16px 2px #67e8f9cc, 0 2px 8px #6366f1' } : {}}
               >
                 {stage.name}
               </button>
@@ -90,136 +224,38 @@ const WorkflowTheater = () => {
           </div>
         </div>
 
-        {/* Main Theater Display */}
-        <div className="max-w-6xl mx-auto">
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20 text-white overflow-hidden">
-            <CardHeader className={`${currentStageData.color} p-8`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">{currentStageData.icon}</span>
-                  </div>
-                  <div>
-                    <CardTitle className="text-3xl font-bold">{currentStageData.name}</CardTitle>
-                    <p className="text-lg opacity-90">{currentStageData.description}</p>
-                  </div>
-                </div>
-                <Badge className="bg-white/20 text-white border-white/30 px-4 py-2">
-                  Agent: {currentStageData.agent}
-                </Badge>
+        {/* Main Command Center Panel */}
+        <div className="rounded-3xl bg-white/90 shadow-2xl p-8 flex flex-col gap-8 border-4 border-indigo-100">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+            {/* Progress ring and checklist */}
+            <div className="flex flex-col items-center justify-center gap-4">
+              <RingProgress percent={progress} color={['#0ea5e9', '#14b8a6', '#f59e42'][currentStage]} />
+              <AnimatedChecklist steps={checklist[currentStage]} progress={progress} />
+            </div>
+
+            {/* Metrics cards */}
+            <div className="col-span-2 flex flex-col md:flex-row gap-8 items-center justify-center">
+              {/* Docs Processed */}
+              <div className="flex flex-col items-center bg-indigo-50 rounded-2xl p-6 min-w-[210px] shadow-lg border-2 border-indigo-100">
+                <span className="text-5xl font-black text-teal-500 mb-1">{docsProcessed}</span>
+                <span className="text-base font-semibold text-indigo-700">Docs Processed</span>
+                <div className="mt-2"><Sparkline data={docsTrend} color="#0ea5e9" /></div>
               </div>
-            </CardHeader>
-
-            <CardContent className="p-8">
-              <div className="grid lg:grid-cols-2 gap-8">
-                
-                {/* Live Processing Visualization */}
-                <div>
-                  <h3 className="text-2xl font-bold mb-6">Live Processing</h3>
-                  
-                  {/* Progress Bar */}
-                  <div className="mb-6">
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Processing Progress</span>
-                      <span>{Math.round(progress)}%</span>
-                    </div>
-                    <Progress value={progress} className="h-3" />
-                  </div>
-
-                  {/* File Processing List */}
-                  <div className="space-y-3">
-                    {currentStageData.files.map((file, index) => (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                        <div className={`w-3 h-3 rounded-full ${
-                          index <= Math.floor(progress / 25) ? 'bg-green-400 animate-pulse-glow' : 'bg-gray-500'
-                        }`} />
-                        <span className="flex-1">{file}</span>
-                        {index <= Math.floor(progress / 25) && (
-                          <Badge className="bg-green-500 text-white border-0 text-xs">
-                            Complete
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Real-time Metrics */}
-                <div>
-                  <h3 className="text-2xl font-bold mb-6">Real-time Metrics</h3>
-                  
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-white/5 rounded-lg p-4 text-center">
-                      <div className="text-3xl font-bold text-green-400">{docsProcessed}</div>
-                      <div className="text-sm opacity-75">Documents Processed</div>
-                    </div>
-                    <div className="bg-white/5 rounded-lg p-4 text-center">
-                      <div className="text-3xl font-bold text-blue-400">{stages.length}</div>
-                      <div className="text-sm opacity-75">Active Agents</div>
-                    </div>
-                  </div>
-
-                  {/* Stage-specific Metrics */}
-                  <div className="space-y-3">
-                    {Object.entries(currentStageData.metrics).map(([key, value]) => (
-                      <div key={key} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                        <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                        <span className="font-bold text-lg">
-                          {typeof value === 'number' && value > 50 ? `${value}%` : value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Live Activity Feed */}
-                  <div className="mt-6">
-                    <h4 className="font-bold mb-3">Live Activity</h4>
-                    <div className="space-y-2 text-sm max-h-40 overflow-y-auto">
-                      <div className="flex items-center gap-2 opacity-75">
-                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                        <span>Agent {currentStageData.agent} processing batch #{docsProcessed + 1}</span>
-                      </div>
-                      <div className="flex items-center gap-2 opacity-60">
-                        <div className="w-2 h-2 bg-blue-400 rounded-full" />
-                        <span>Data validation completed for invoice batch</span>
-                      </div>
-                      <div className="flex items-center gap-2 opacity-60">
-                        <div className="w-2 h-2 bg-purple-400 rounded-full" />
-                        <span>LLM analysis generated 15 new insights</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {/* Agents Online */}
+              <div className="flex flex-col items-center bg-indigo-50 rounded-2xl p-6 min-w-[210px] shadow-lg border-2 border-indigo-100">
+                <span className="text-5xl font-black text-blue-500 mb-1">{agentsOnline}</span>
+                <span className="text-base font-semibold text-indigo-700">Agents Online</span>
+                <div className="mt-2"><Sparkline data={agentsTrend} color="#6366f1" /></div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Workflow Flow Visualization */}
-        <div className="mt-16">
-          <h3 className="text-3xl font-bold text-white text-center mb-8">End-to-End Workflow</h3>
-          <div className="flex justify-center items-center space-x-8 overflow-x-auto pb-4">
-            {stages.map((stage, index) => (
-              <div key={index} className="relative flex-shrink-0">
-                <div className={`w-24 h-24 ${stage.color} rounded-full flex items-center justify-center ${
-                  index === currentStage ? 'animate-pulse-glow' : 'opacity-70'
-                } transition-all duration-500`}>
-                  <span className="text-2xl">{stage.icon}</span>
-                </div>
-                <div className="text-center mt-3">
-                  <div className="text-white font-semibold text-sm">{stage.name}</div>
-                  <div className="text-white/70 text-xs">{stage.agent}</div>
-                </div>
-                {index < stages.length - 1 && (
-                  <div className="absolute top-12 left-full w-8 h-0.5 workflow-line" />
-                )}
-              </div>
-            ))}
+            </div>
           </div>
+
+          {/* Live ticker */}
+          <AgentTicker activity={ticker} />
         </div>
       </div>
     </section>
   );
-};
+}
 
 export default WorkflowTheater;

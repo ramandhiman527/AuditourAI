@@ -107,53 +107,6 @@ const TechnicalArchitecture = () => {
           </div>
         </div>
 
-        {/* Data Flow Visualization */}
-        <div className="mb-16">
-          <h3 className="text-3xl font-bold text-center mb-8">Data Flow</h3>
-          <div className="flex justify-center items-center space-x-8 overflow-x-auto pb-4">
-            {['Input', 'Process', 'Analyze', 'Generate', 'Deliver'].map((step, index) => (
-              <div key={step} className="relative flex-shrink-0">
-                <div className="w-20 h-20 bg-gradient-to-br from-soft-lavender to-pale-orchid rounded-full flex items-center justify-center animate-pulse-glow"
-                     style={{ animationDelay: `${index * 0.3}s` }}>
-                  <span className="text-deep-slate font-bold">{index + 1}</span>
-                </div>
-                <div className="text-center mt-3">
-                  <div className="text-white font-semibold text-sm">{step}</div>
-                </div>
-                {index < 4 && (
-                  <div className="absolute top-10 left-full w-8 h-0.5 workflow-line" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Integration Ecosystem */}
-        <div>
-          <h3 className="text-3xl font-bold text-center mb-12">Integration Ecosystem</h3>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {integrations.map((integration, index) => (
-              <Card key={index} className="bg-white/5 backdrop-blur border-white/10 hover-lift">
-                <CardContent className="p-6 text-center">
-                  <div className="mb-4">
-                    <h4 className="font-bold text-white text-lg">{integration.name}</h4>
-                    <p className="text-white/70 text-sm">{integration.type}</p>
-                  </div>
-                  <Badge 
-                    className={`${
-                      integration.status === 'live' 
-                        ? 'bg-green-500 text-white' 
-                        : 'bg-yellow-500 text-black'
-                    } border-0`}
-                  >
-                    {integration.status.toUpperCase()}
-                  </Badge>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
         {/* Performance Stats */}
         <div className="mt-16 grid md:grid-cols-3 gap-8">
           <div className="text-center p-8 bg-white/5 backdrop-blur rounded-lg border border-white/10">

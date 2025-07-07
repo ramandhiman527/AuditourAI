@@ -48,8 +48,8 @@ const Header = () => {
   ];
 
   const techStack = [
-    { name: 'OpenAI GPT-4', icon: '🧠' },
-    { name: 'Claude AI', icon: '⚡' },
+    { name: 'OpenAI GPT-4o', icon: '🧠' },
+    { name: 'Claude Sonnet', icon: '⚡' },
     { name: 'React', icon: '⚛️' },
     { name: 'Python', icon: '🐍' },
   ];
@@ -70,106 +70,40 @@ const Header = () => {
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-soft-lavender rounded-full animate-pulse"></div>
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold bg-neural-gradient bg-clip-text text-transparent">
-                  ThynkSort
-                </span>
-                <div className="flex items-center space-x-1 text-xs text-muted-violet">
-                  <Zap className="w-3 h-3" />
-                  <span>AI Agents Active: {aiAgentCount.toLocaleString()}</span>
+                {/* Redesigned Brand Logo */}
+                <div className="relative flex items-center">
+                                    <span className="inline-flex items-center">
+                    <Brain className="w-7 h-7 mr-2 text-gradient animate-spin-slow" style={{ background: 'linear-gradient(90deg,#7f53ac,#657ced,#ff6a88)', WebkitBackgroundClip: 'text', color: 'transparent' }} />
+                    <span
+                      className="text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-700 via-purple-600 to-pink-400 bg-clip-text text-transparent drop-shadow-xl tracking-tight"
+                      style={{ fontFamily: 'Frank, Inter, Arial, sans-serif', letterSpacing: '-0.01em' }}
+                    >
+                      AuditourAI
+                    </span>
+                  </span>
+                  {/* Subtle glow accent */}
+                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-24 h-4 bg-gradient-to-r from-blue-400/30 via-purple-300/30 to-pink-300/30 blur-lg rounded-full opacity-80 pointer-events-none"></span>
                 </div>
               </div>
             </div>
 
-            {/* Desktop Navigation */}
-            <NavigationMenu className="hidden md:flex">
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-transparent hover:bg-white/10 text-foreground">
-                    Features
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid gap-3 p-6 w-[400px]">
-                      <div className="grid grid-cols-2 gap-4">
-                        {agentPreviews.map((agent) => (
-                          <div key={agent.name} className="group flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                            <div className={`w-10 h-10 ${agent.color} rounded-full flex items-center justify-center text-white font-bold`}>
-                              {agent.name[0]}
-                            </div>
-                            <div>
-                              <div className="font-semibold text-sm">{agent.name}</div>
-                              <div className="text-xs text-muted-foreground">{agent.description}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
+            {/* Minimalist Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-6">
+              <a href="#features" className="nav-item text-base font-medium text-foreground hover:text-blue-600 transition-colors">Features</a>
+              <a href="#blog" className="nav-item text-base font-medium text-foreground hover:text-blue-600 transition-colors">Blog</a>
+              <a href="#contact" className="nav-item text-base font-medium text-foreground hover:text-blue-600 transition-colors">Contact Us</a>
+              <div className="flex items-center space-x-4 ml-6">
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-500 text-white px-6 py-2 rounded-full shadow-md hover:from-purple-600 hover:to-pink-400 transition-all duration-300 font-semibold text-base animate-pulse-glow">
+                  Book Demo
+                </Button>
+                <Button className="bg-gradient-to-r from-pink-400 to-yellow-400 text-white px-6 py-2 rounded-full shadow-lg hover:from-yellow-400 hover:to-pink-400 transition-all duration-300 font-semibold text-base animate-pulse-glow">
+                  Join Waitlist
+                </Button>
+              </div>
+            </nav>
 
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-transparent hover:bg-white/10 text-foreground">
-                    Technology
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid gap-3 p-6 w-[300px]">
-                      {techStack.map((tech) => (
-                        <div key={tech.name} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
-                          <span className="text-2xl">{tech.icon}</span>
-                          <span className="font-medium">{tech.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-
-                <NavigationMenuItem>
-                  <button className="relative px-4 py-2 text-sm font-medium text-foreground hover:text-soft-lavender transition-colors">
-                    Pricing
-                    <span className="absolute -top-1 -right-1 bg-gradient-to-r from-soft-lavender to-pale-orchid text-white text-xs px-2 py-1 rounded-full animate-pulse">
-                      Early Bird
-                    </span>
-                  </button>
-                </NavigationMenuItem>
-
-                <NavigationMenuItem>
-                  <button className="px-4 py-2 text-sm font-medium text-foreground hover:text-soft-lavender transition-colors">
-                    About
-                  </button>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
-
-            {/* Right Side Controls */}
+            {/* Minimalist Right Side Controls (Mobile Menu Toggle only) */}
             <div className="flex items-center space-x-4">
-              {/* Language Toggle */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="hidden sm:flex items-center space-x-1">
-                    <Globe className="w-4 h-4" />
-                    <span>{language}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setLanguage('EN')}>
-                    🇺🇸 English
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setLanguage('HI')}>
-                    🇮🇳 हिंदी
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Demo Button */}
-              <Button className="hidden sm:inline-flex bg-gradient-to-r from-deep-slate to-muted-violet hover:from-muted-violet hover:to-soft-lavender text-white px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105 animate-pulse-glow">
-                Book Demo
-              </Button>
-
-              {/* Waitlist Button */}
-              <Button className="bg-gradient-to-r from-soft-lavender to-pale-orchid hover:from-pale-orchid hover:to-soft-lavender text-white px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                Join Waitlist
-              </Button>
-
-              {/* Mobile Menu Toggle */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -186,27 +120,18 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Minimalist Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden mt-4 glass-effect backdrop-blur-md border-t border-white/20">
             <div className="container mx-auto px-4 py-4 space-y-4">
-              <button className="block w-full text-left py-2 text-foreground hover:text-soft-lavender transition-colors">
-                Features
-              </button>
-              <button className="block w-full text-left py-2 text-foreground hover:text-soft-lavender transition-colors">
-                Technology
-              </button>
-              <button className="block w-full text-left py-2 text-foreground hover:text-soft-lavender transition-colors">
-                Pricing
-              </button>
-              <button className="block w-full text-left py-2 text-foreground hover:text-soft-lavender transition-colors">
-                About
-              </button>
+              <a href="#features" className="block w-full text-left py-2 text-foreground hover:text-blue-600 transition-colors">Features</a>
+              <a href="#blog" className="block w-full text-left py-2 text-foreground hover:text-blue-600 transition-colors">Blog</a>
+              <a href="#contact" className="block w-full text-left py-2 text-foreground hover:text-blue-600 transition-colors">Contact Us</a>
               <div className="pt-4 border-t border-white/20">
-                <Button className="w-full mb-2 bg-gradient-to-r from-deep-slate to-muted-violet text-white">
+                <Button className="w-full mb-2 bg-gradient-to-r from-blue-600 to-purple-500 text-white font-semibold animate-pulse-glow">
                   Book Demo
                 </Button>
-                <Button className="w-full bg-gradient-to-r from-soft-lavender to-pale-orchid text-white">
+                <Button className="w-full bg-gradient-to-r from-pink-400 to-yellow-400 text-white font-semibold animate-pulse-glow">
                   Join Waitlist
                 </Button>
               </div>

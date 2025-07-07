@@ -205,26 +205,7 @@ const AgentShowcase = () => {
           </Card>
         </div>
 
-        {/* Agent Interaction Visualization */}
-        <div className="mt-16 text-center">
-          <h3 className="text-3xl font-bold text-gray-900 mb-8">Agents Working Together</h3>
-          <div className="flex justify-center items-center space-x-8">
-            {agents.map((agent, index) => (
-              <div key={agent.id} className="relative">
-                <div className={`w-20 h-20 ${agent.color} rounded-full flex items-center justify-center animate-float`}
-                     style={{ animationDelay: `${index * 0.5}s` }}>
-                  <span className="text-2xl">{agent.icon}</span>
-                </div>
-                {index < agents.length - 1 && (
-                  <div className="absolute top-1/2 left-full w-8 h-0.5 workflow-line" />
-                )}
-              </div>
-            ))}
-          </div>
-          <p className="text-gray-600 mt-6 text-lg">
-            Seamless collaboration between AI agents for end-to-end audit automation
-          </p>
-        </div>
+
       </div>
     </section>
   );

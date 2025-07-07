@@ -286,93 +286,36 @@ const WaitlistSignup = () => {
 
   return (
     <section className="py-20 bg-gradient-to-br from-pale-orchid to-white">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <Badge className="mb-4 bg-deep-slate text-white px-6 py-2 text-lg">
-            Reserve Your AI Audit Team
-          </Badge>
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
-            Join the Waitlist
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Be among the first to experience the future of audit automation with our AI agents
-          </p>
+      <div className="container mx-auto px-6 max-w-lg">
+        <div className="text-center mb-10">
+          <h2 className="text-4xl font-bold text-gray-900 mb-3">Join the Early Waitlist And Explore the New Concept</h2>
+          <p className="text-lg text-red-600 font-semibold mb-6">Only 100 early access slots left</p>
         </div>
-
-        {/* Progress Steps */}
-        <div className="max-w-4xl mx-auto mb-12">
-          <div className="flex justify-between items-center">
-            {steps.map((step) => (
-              <div key={step.number} className="flex flex-col items-center">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl ${
-                  step.number <= currentStep 
-                    ? 'bg-deep-slate text-white' 
-                    : 'bg-gray-200 text-gray-500'
-                } transition-all duration-300`}>
-                  {step.number === currentStep ? step.icon : step.number}
-                </div>
-                <div className={`text-center mt-2 text-sm font-semibold ${
-                  step.number <= currentStep ? 'text-deep-slate' : 'text-gray-500'
-                }`}>
-                  {step.title}
-                </div>
-                {step.number < steps.length && (
-                  <div className={`h-1 w-24 mt-2 ${
-                    step.number < currentStep ? 'bg-deep-slate' : 'bg-gray-200'
-                  } transition-all duration-300`} />
-                )}
+        <Card className="border-0 shadow-2xl">
+          <CardContent className="p-8">
+            <form className="space-y-6" action="https://formspree.io/f/xwpbozoo" method="POST">
+              <div>
+                <Label htmlFor="email" className="block mb-2 font-semibold">Email</Label>
+                <Input id="email" name="email" type="email" required placeholder="Enter your email" className="w-full" />
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Form Content */}
-        <div className="max-w-4xl mx-auto">
-          <Card className="border-0 shadow-2xl">
-            <CardHeader className="bg-gradient-to-r from-deep-slate to-muted-violet text-white p-8">
-              <CardTitle className="text-2xl font-bold text-center">
-                {steps[currentStep - 1]?.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8">
-              {renderStepContent()}
-              
-              {/* Navigation Buttons */}
-              {currentStep < 5 && (
-                <div className="flex justify-between mt-8 pt-8 border-t">
-                  <Button 
-                    variant="outline" 
-                    onClick={handlePrevious}
-                    disabled={currentStep === 1}
-                    className="px-8 py-3"
-                  >
-                    Previous
-                  </Button>
-                  <Button 
-                    onClick={currentStep === 4 ? handleSubmit : handleNext}
-                    className="bg-deep-slate text-white hover:bg-muted-violet px-8 py-3"
-                  >
-                    {currentStep === 4 ? 'Complete Registration' : 'Next Step'}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Trust Indicators */}
-        {currentStep !== 5 && (
-          <div className="mt-16 text-center">
-            <p className="text-gray-600 mb-6">Trusted by 500+ audit professionals</p>
-            <div className="flex justify-center space-x-8">
-              {['SOC 2 Compliant', 'GDPR Ready', 'Bank-grade Security', '99.9% Uptime'].map((feature) => (
-                <Badge key={feature} variant="outline" className="border-deep-slate text-deep-slate">
-                  {feature}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
+              <div>
+                <Label htmlFor="firmType" className="block mb-2 font-semibold">Firm Type</Label>
+                <Select name="firmType" required>
+                  <SelectTrigger id="firmType" className="w-full">
+                    <SelectValue placeholder="Select your firm type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CA">CA Firm</SelectItem>
+                    <SelectItem value="Consulting">Consulting</SelectItem>
+                    <SelectItem value="Enterprise">Enterprise</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="submit" className="w-full bg-deep-slate text-white py-3 text-lg font-bold rounded-lg mt-6 hover:bg-muted-violet transition">Submit</Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );
